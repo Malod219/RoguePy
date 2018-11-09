@@ -1,0 +1,2 @@
+# RoguePy
+A generic Roguelike
