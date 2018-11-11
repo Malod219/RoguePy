@@ -2,6 +2,7 @@ import libtcodpy as libtcod
 
 from game_states import GameStates
 
+
 def handle_keys(key, game_state):
     if game_state == GameStates.PLAYERS_TURN:
         return handle_player_turn_keys(key)
@@ -10,6 +11,7 @@ def handle_keys(key, game_state):
     elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
         return handle_player_inventory_keys(key)
     return {}
+
 
 def handle_player_turn_keys(key):
     # Movement keys
@@ -49,6 +51,7 @@ def handle_player_turn_keys(key):
     # No key was pressed
     return {}
 
+
 def handle_player_dead_keys(key):
     key_char = chr(key.c)
 
@@ -64,6 +67,7 @@ def handle_player_dead_keys(key):
 
     return {}
 
+
 def handle_player_inventory_keys(key):
     index = key.c - ord('a')
 
@@ -77,4 +81,16 @@ def handle_player_inventory_keys(key):
         # Exit the menu
         return {'exit': True}
 
+    return {}
+
+
+def handle_main_menu(key):
+    key_char = chr(key.c)
+
+    if key_char == 'a':
+        return {'new_game': True}
+    elif key_char == 'b':
+        return {'load_game': True}
+    elif key_char == 'c' or key.vk == libtcod.KEY_ESCAPE:
+        return {'exit': True}
     return {}
