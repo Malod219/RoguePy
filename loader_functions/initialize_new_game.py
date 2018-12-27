@@ -1,9 +1,14 @@
 import libtcodpy as libtcod
 
+from components.equipment import Equipment
 from components.fighter import Fighter
 from components.inventory import Inventory
+from components.equippable import Equippable
+from components.level import Level
 
 from entity import Entity
+
+from equipment_slots import EquipmentSlots
 
 from game_messages import MessageLog
 
@@ -17,36 +22,39 @@ from render_functions import RenderOrder
 def get_constants():
     window_title = 'Roguelike'
 
-    screen_width = 80
-    screen_height = 50
+    screen_width = 160
+    screen_height = 90
 
-    bar_width = 20
-    panel_height = 7
+    bar_width = 40
+    panel_height = 10
     panel_y = screen_height - panel_height
 
-    message_x = 22
+    message_x = 44
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
-    map_width = 80
-    map_height = 43
+    map_width = 100
+    map_height = 100
 
-    room_max_size = 10
+    room_max_size = 15
     room_min_size = 6
-    max_rooms = 30
+    max_rooms = 50
 
     fov_algorithm = 0
     fov_light_walls = True
     fov_radius = 10
 
-    max_monsters_per_room = 3
-    max_items_per_room = 2
+    max_monsters_per_room = 4
+    max_items_per_room = 4
 
+
+    # This is for tiles.
+    # ID : ['Character', Foreground Colour, Background Colour]
     colors = {
-        'dark_wall': libtcod.Color(0, 0, 100),
-        'dark_ground': libtcod.Color(50, 50, 100),
-        'light_wall': libtcod.Color(130, 110, 50),
-        'light_ground': libtcod.Color(200, 180, 50),
+        'dark_wall': ['#', libtcod.Color(0, 0, 100), libtcod.Color(0, 0, 0)],
+        'dark_ground': ['.', libtcod.Color(50, 50, 100), libtcod.Color(0, 0, 0)],
+        'light_wall': ['#', libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 0)],
+        'light_ground': ['.', libtcod.Color(200, 180, 50), libtcod.Color(0, 0, 0)],
         }
 
     constants = {
@@ -69,23 +77,30 @@ def get_constants():
         'fov_radius': fov_radius,
         'max_monsters_per_room': max_monsters_per_room,
         'max_items_per_room': max_items_per_room,
-        'colors': colors
+        'colors': colors,
     }
 
     return constants
 
 
 def get_game_variables(constants):
-    fighter_component = Fighter(hp=30, defense=2, power=5)
+    fighter_component = Fighter(hp=100, defense=1, power=2)
     inventory_component = Inventory(26)
+    level_component = Level()
+    equipment_component = Equipment()
     player = Entity(0, 0, '@', libtcod.white, 'Player', blocks=True, render_order=RenderOrder.ACTOR,
-                    fighter=fighter_component, inventory=inventory_component)
+                    fighter=fighter_component, inventory=inventory_component, level=level_component,
+                    equipment=equipment_component)
     entities = [player]
+
+    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=2, max_hp_bonus=20)
+    dagger = Entity(0,0, '-', libtcod.sky, 'Dagger', equippable=equippable_component)
+    player.inventory.add_item(dagger)
+    player.equipment.toggle_equip(dagger)
 
     game_map = GameMap(constants['map_width'], constants['map_height'])
     game_map.make_map(constants['max_rooms'], constants['room_min_size'], constants['room_max_size'],
-                      constants['map_width'], constants['map_height'], player, entities,
-                      constants['max_monsters_per_room'], constants['max_items_per_room'])
+                      constants['map_width'], constants['map_height'], player, entities)
 
     message_log = MessageLog(constants['message_x'], constants['message_width'], constants['message_height'])
 
