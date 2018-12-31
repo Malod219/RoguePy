@@ -1,6 +1,7 @@
 from equipment_slots import EquipmentSlots
+from components.item import Item
 
-
+# Class for player's currently equipped items
 class Equipment:
 
     def __init__(self, main_hand=None, off_hand=None):

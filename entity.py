@@ -2,6 +2,11 @@ import libtcodpy as libtcod
 import math
 
 from components.item import Item
+from components.inventory import Inventory
+from components.fighter import Fighter
+from components.ai import BasicMonster
+from components.equipment import Equipment
+from components.equippable import Equippable
 
 from render_functions import RenderOrder
 

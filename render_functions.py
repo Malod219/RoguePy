@@ -68,24 +68,25 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
                 tile = game_map.tiles[tile_x][tile_y]
 
                 visible = libtcod.map_is_in_fov(fov_map, tile_x, tile_y)
+                name = str(game_map.theme)
                 wall = tile.block_sight
 
                 if visible:
                     if wall:
-                        libtcod.console_put_char_ex(con, x, y, colors.get('light_wall')[0], colors.get('light_wall')[1],
-                                                    colors.get('light_wall')[2])
+                        libtcod.console_put_char_ex(con, x, y, colors.get(name+'_light_wall')[0], colors.get(name+'_light_wall')[1],
+                                                    colors.get(name+'_light_wall')[2])
                     else:
-                        libtcod.console_put_char_ex(con, x, y, colors.get('light_ground')[0], colors.get('light_ground')[1],
-                                                    colors.get('light_ground')[2])
+                        libtcod.console_put_char_ex(con, x, y, colors.get(name+'_light_ground')[0], colors.get(name+'_light_ground')[1],
+                                                    colors.get(name+'_light_ground')[2])
                         
                     tile.explored = True
                 elif tile.explored:
                     if wall:
-                        libtcod.console_put_char_ex(con, x, y, colors.get('dark_wall')[0], colors.get('dark_wall')[1],
-                                                    colors.get('dark_wall')[2])
+                        libtcod.console_put_char_ex(con, x, y, colors.get(name+'_dark_wall')[0], colors.get(name+'_dark_wall')[1],
+                                                    colors.get(name+'_dark_wall')[2])
                     else:
-                        libtcod.console_put_char_ex(con, x, y, colors.get('dark_ground')[0], colors.get('dark_ground')[1],
-                                                    colors.get('dark_ground')[2])
+                        libtcod.console_put_char_ex(con, x, y, colors.get(name+'_dark_ground')[0], colors.get(name+'_dark_ground')[1],
+                                                    colors.get(name+'_dark_ground')[2])
 
     entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
     # Draw entities
@@ -104,7 +105,7 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
     libtcod.console_set_default_foreground(panel, libtcod.light_orange)
     libtcod.console_print_frame(panel, 0, 0, screen_width, panel_height, False, libtcod.BKGND_NONE,"Message Log")
 
-    render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp, libtcod.light_red, libtcod.darker_grey)
+    render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp, libtcod.dark_crimson, libtcod.darkest_grey)
     libtcod.console_print_ex(panel, 1, 3, libtcod.BKGND_NONE, libtcod.LEFT,
                              'Dungeon level: {0}'.format(game_map.dungeon_level))
 

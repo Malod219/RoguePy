@@ -6,6 +6,7 @@ from game_messages import Message
 from item_functions import heal, cast_lightning, cast_fireball
 from map_objects.tile import Tile
 from map_objects.rectangle import Rect
+from map_objects.cellularAutomataGen import make_cave_room
 from components.fighter import Fighter
 from components.ai import BasicMonster
 from components.item import Item
@@ -23,16 +24,24 @@ class GameMap:
         self.tiles = self.initialize_tiles()
 
         self.dungeon_level = dungeon_level
+        self.theme = randint(0,1)
 
     def initialize_tiles(self):
         tiles = [[Tile(True) for y in range(self.height)] for x in range(self.width)]
 
         return tiles
 
+    def clean_up_boundary(self, map_width, map_height):
+        for x, row in enumerate(self.tiles):
+            for y, col in enumerate(row):
+                if x in (0, 1, map_width-1, map_width-2) or y in (0, 1, map_height-1, map_height-2):
+                    self.tiles[x][y].name = None
+                    self.tiles[x][y].blocked = True
+                    self.tiles[x][y].block_sight = True
+
     def make_map(self , max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities):
         rooms = []
         num_rooms = 0
-
 
         center_of_last_room_x = None
         center_of_last_room_y = None
@@ -54,7 +63,7 @@ class GameMap:
                     break
             else:
                 #No intersections so valid
-                self.create_room(new_room)
+                self.create_room(new_room, map_width, map_height)
                 #center coordinates of new room
                 (new_x, new_y) = new_room.center()
 
@@ -70,42 +79,52 @@ class GameMap:
                     #flip a coin for tunnels
                     if randint(0, 1) == 1:
                         #first move horizontal then vertical
-                        self.create_h_tunnel(prev_x, new_x, prev_y)
-                        self.create_v_tunnel(prev_y, new_y, new_x)
+                        self.create_h_tunnel(prev_x, new_x, prev_y, randint(1,4))
+                        self.create_v_tunnel(prev_y, new_y, new_x, randint(1,4))
                     else:
-                        self.create_v_tunnel(prev_y, new_y, prev_x)
-                        self.create_h_tunnel(prev_x, new_x, new_y)
+                        self.create_v_tunnel(prev_y, new_y, prev_x, randint(1,4))
+                        self.create_h_tunnel(prev_x, new_x, new_y, randint(1,4))
                 #finally append room to list and increment room count
                 self.place_entities(new_room, entities)
                 rooms.append(new_room)
-                num_rooms+=1
+                num_rooms += 1
+        self.clean_up_boundary(map_width, map_height)
+
         stairs_component = Stairs(self.dungeon_level + 1)
         down_stairs = Entity(center_of_last_room_x, center_of_last_room_y, '>', libtcod.white, 'Stairs',
                              render_order=RenderOrder.STAIRS, stairs=stairs_component)
         entities.append(down_stairs)
 
-    def create_room(self, room):
-        #create some rooms
-        for x in range(room.x1+1, room.x2):
-            for y in range(room.y1+1, room.y2):
-                self.tiles[x][y].blocked = False
-                self.tiles[x][y].block_sight = False
+    def create_room(self, room, map_width, map_height):
+        room_choice = randint(0, 1)
 
-    def create_h_tunnel(self, x1, x2, y):
-        for x in range(min(x1, x2), max(x1, x2) + 1):
-            self.tiles[x][y].blocked = False
-            self.tiles[x][y].block_sight = False
+        if room_choice == 0:
+            for x in range(room.x1+1, room.x2):
+                for y in range(room.y1+1, room.y2):
+                    self.tiles[x][y].blocked = False
+                    self.tiles[x][y].block_sight = False
+        elif room_choice == 1:
+            room_width = room.x2 - room.x1
+            room_height = room.y2 - room.y1
+            make_cave_room(self, room_width, room_height, room.x1, room.y1, map_width, map_height)
 
-    def create_v_tunnel(self, y1, y2, x):
-        for y in range(min(y1, y2), max(y1, y2) + 1):
-            self.tiles[x][y].blocked = False
-            self.tiles[x][y].block_sight = False
+    def create_h_tunnel(self, x1, x2, y, tunnel_width):
+        for tunnel in range(tunnel_width):
+            for x in range(min(x1, x2), max(x1, x2) + 1):
+                self.tiles[x][y+tunnel].blocked = False
+                self.tiles[x][y+tunnel].block_sight = False
+
+    def create_v_tunnel(self, y1, y2, x, tunnel_width):
+        for tunnel in range(tunnel_width):
+            for y in range(min(y1, y2), max(y1, y2) + 1):
+                self.tiles[x+tunnel][y].blocked = False
+                self.tiles[x+tunnel][y].block_sight = False
 
     def place_entities(self, room, entities):
         max_monsters_per_room = from_dungeon_level([[2, 1], [3,4], [5,6]], self.dungeon_level)
         max_items_per_room = from_dungeon_level([[1,1], [2,4]], self.dungeon_level)
 
-        #Get a random number of monsters
+        # Get a random number of monsters
         number_of_monsters = randint(0, max_monsters_per_room)
         number_of_items = randint(0, max_items_per_room)
 
@@ -173,7 +192,8 @@ class GameMap:
         return False
 
     def next_floor(self, player, message_log, constants):
-        self.dungeon_level+=1
+        self.dungeon_level += 1
+        self.theme = randint(0, 1)
         entities = [player]
 
         self.tiles = self.initialize_tiles()
@@ -184,4 +204,3 @@ class GameMap:
 
         message_log.add_message(Message('You take a moment to rest and recover your strength', libtcod.light_violet))
         return entities
-

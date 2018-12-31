@@ -33,12 +33,12 @@ def get_constants():
     message_width = screen_width - bar_width - 2
     message_height = panel_height - 1
 
-    map_width = 100
-    map_height = 100
+    map_width = 50
+    map_height = 50
 
-    room_max_size = 15
+    room_max_size = 10
     room_min_size = 6
-    max_rooms = 50
+    max_rooms = 40
 
     fov_algorithm = 0
     fov_light_walls = True
@@ -47,14 +47,40 @@ def get_constants():
     max_monsters_per_room = 4
     max_items_per_room = 4
 
+    chrome = [libtcod.Color(100, 100, 100), libtcod.Color(16, 36, 44),
+              libtcod.Color(13, 28, 34),  libtcod.Color(0, 10, 14)]
+    earth = [libtcod.Color(100, 67, 51), libtcod.Color(71, 45, 32),
+             libtcod.Color(44, 14, 0),   libtcod.Color(47, 19, 10)]
+
 
     # This is for tiles.
     # ID : ['Character', Foreground Colour, Background Colour]
     colors = {
-        'dark_wall': ['#', libtcod.Color(0, 0, 100), libtcod.Color(0, 0, 0)],
-        'dark_ground': ['.', libtcod.Color(50, 50, 100), libtcod.Color(0, 0, 0)],
-        'light_wall': ['#', libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 0)],
-        'light_ground': ['.', libtcod.Color(200, 180, 50), libtcod.Color(0, 0, 0)],
+        # Walls
+            # Visible
+            'w_earth_light': ['#', earth[0], earth[1]],
+            # Out of view
+            'w_earth_dark': ['#', earth[2], earth[3]],
+        # Floor tiles
+            # Visible
+            'f_earth_light': [',', earth[0], earth[1]],
+            # Out of view
+            'f_earth_dark': [',', earth[2], earth[3]],
+
+        '0_dark_wall': ['#', libtcod.Color(0, 0, 100), libtcod.Color(0, 0, 0)],
+        '0_dark_ground': ['.', libtcod.Color(50, 50, 100), libtcod.Color(0, 0, 0)],
+        '0_light_wall': ['#', libtcod.Color(130, 110, 50), libtcod.Color(0, 0, 0)],
+        '0_light_ground': ['.', libtcod.Color(200, 180, 50), libtcod.Color(0, 0, 0)],
+
+        '1_light_wall': ['#', chrome[0], chrome[1]],
+        '1_light_ground': ['.', chrome[0], chrome[1]],
+        '1_dark_wall': ['#', chrome[2], chrome[3]],
+        '1_dark_ground': ['.', chrome[2], chrome[3]],
+
+        '2_light_wall': ['#', earth[0], earth[1]],
+        '2_dark_wall': ['#', earth[2], earth[3]],
+        '2_light_ground': [',', earth[0], earth[1]],
+        '2_dark_ground': ['.', earth[2], earth[3]],
         }
 
     constants = {
