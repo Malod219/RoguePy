@@ -88,10 +88,13 @@ def load_layer_to_console(console, xp_file_layer, offsetX=0, offsetY=0, drawTran
         for y in range(xp_file_layer['height']):
             cell_data = xp_file_layer['cells'][x][y]
             fore_color = (cell_data['fore_r'], cell_data['fore_g'], cell_data['fore_b'])
+            fore_color_libtcod = Color(cell_data['fore_r'], cell_data['fore_g'], cell_data['fore_b'])
             back_color = (cell_data['back_r'], cell_data['back_g'], cell_data['back_b'])
+            back_color_libtcod = Color(cell_data['back_r'], cell_data['back_g'], cell_data['back_b'])
+
             if back_color != (transparent_cell_back_r, transparent_cell_back_g,
                               transparent_cell_back_b) or drawTransparent:  # If we don't perform that check we get a fully pink rectangle, that we cannot fix otherwise since TDL doesn't support set_key_color
-                console_put_char_ex(console, offsetX + x, offsetY + y, cell_data['keycode'], fore_color, back_color)  # Replace with 'console_put_char_ex(console, offsetX + x, offsetY + y, cell_data['keycode'], fore_color, back_color)' without quotation marks if using libtcod.
+                console_put_char_ex(console, offsetX + x, offsetY + y, cell_data['keycode'], fore_color_libtcod, back_color_libtcod)  # Replace with 'console_put_char_ex(console, offsetX + x, offsetY + y, cell_data['keycode'], fore_color, back_color)' without quotation marks if using libtcod.
 
 
 def get_position_key_xy(xp_file_layer, poskey_color):
