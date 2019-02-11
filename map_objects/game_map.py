@@ -3,18 +3,13 @@ from random import randint
 
 from entity import Entity
 from game_messages import Message
-from item_functions import heal, cast_lightning, cast_fireball
 from map_objects.tile import Tile
 from map_objects.rectangle import Rect
 from map_objects.cellularAutomataGen import make_cave_room
-from components.fighter import Fighter
-from components.ai import BasicMonster
-from components.item import Item
-from components.equippable import Equippable
-from components.equipment import EquipmentSlots
 from components.stairs import Stairs
 from render_functions import RenderOrder
 from random_utils import from_dungeon_level, random_choice_from_dict
+from map_objects.content import get_content, create_entity, create_item
 
 
 class GameMap:
@@ -128,60 +123,36 @@ class GameMap:
         number_of_monsters = randint(0, max_monsters_per_room)
         number_of_items = randint(0, max_items_per_room)
 
-        monster_chances = {'orc': 80,
-                           'troll': from_dungeon_level([[15, 3], [30, 5], [60, 7]], self.dungeon_level)}
-        item_chances = {'healing_potion': 35,
-                        'sword': from_dungeon_level([[5,4]], self.dungeon_level),
-                        'shield': from_dungeon_level([[15,8]], self.dungeon_level),
-                        'lightning_scroll': from_dungeon_level([[25, 4]], self.dungeon_level),
-                        'fireball_scroll': from_dungeon_level([[25, 6]], self.dungeon_level),
-                        }
+        monster_chances, item_chances = get_content(self)
 
         for i in range(number_of_monsters):
-            #choose a random location in room
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
 
-            if not any([entity for entity in entities if entity.x == x and entity.y == y ]):
+            #choose a random location in room
+            if self.tiles[x][y].blocked == True:
+                skip = True
+            else:
+                skip = False
+
+            if not any([entity for entity in entities if entity.x == x and entity.y == y ]) and not skip:
                 monster_choice = random_choice_from_dict(monster_chances)
-                if monster_choice == 'orc':
-                    fighter_component = Fighter(hp=20, defense=0, power=4, xp=35)
-                    ai_component = BasicMonster()
-                    monster = Entity(x, y, 'o', libtcod.desaturated_green, 'Orc', blocks = True, render_order = RenderOrder.ACTOR,
-                                     fighter = fighter_component, ai = ai_component)
-                else:
-                    fighter_component = Fighter(hp=30, defense=2, power=8, xp=100)
-                    ai_component = BasicMonster()
-                    monster = Entity(x, y, 'T', libtcod.darker_green, 'Troll', blocks = True, render_order = RenderOrder.ACTOR,
-                                     fighter = fighter_component,
-                                     ai = ai_component)
+                monster = create_entity(x, y, monster_choice)
                 entities.append(monster)
         for i in range(number_of_items):
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
-            if not any([entity for entity in entities if entity.x == x and entity.y == y ]):
+
+            #choose a random location in room
+            if self.tiles[x][y].blocked == True:
+                skip = True
+            else:
+                skip = False
+
+            if not any([entity for entity in entities if entity.x == x and entity.y == y ]) and not skip:
                 item_choice = random_choice_from_dict(item_chances)
 
-                if item_choice == 'healing_potion':
-                    item_component = Item(use_function=heal, amount=40)
-                    item = Entity(x, y, '!', libtcod.violet, 'Healing Salve', render_order=RenderOrder.ITEM,
-                                  item=item_component)
-                elif item_choice == 'sword':
-                    equippable_component = Equippable(EquipmentSlots.MAIN_HAND, power_bonus=3)
-                    item = Entity(x, y, '/', libtcod.sky, 'Sword', equippable=equippable_component)
-                elif item_choice == 'shield':
-                    equippable_component = Equippable(EquipmentSlots.OFF_HAND, defense_bonus=1)
-                    item = Entity(x, y, '[', libtcod.darker_amber, 'Shield', equippable=equippable_component)
-                elif item_choice == 'fireball_scroll':
-                    item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
-                        'Left-click a target tile for the fireball, or right click to cancel.', libtcod.light_cyan),
-                                          damage=25, radius=3)
-                    item = Entity(x, y, '#', libtcod.yellow, 'Fireball Scroll', render_order=RenderOrder.ITEM,
-                                  item=item_component)
-                else:
-                    item_component = Item(use_function=cast_lightning, damage=40, maximum_range=5)
-                    item = Entity(x, y, '!', libtcod.yellow, 'Scroll of ZARGOYF', render_order=RenderOrder.ITEM,
-                                  item=item_component)
+                item = create_item(x, y, item_choice)
 
                 entities.append(item)
 
