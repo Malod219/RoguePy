@@ -10,7 +10,7 @@ My intentions with this as I have finished the tutorial is to continue developin
 - [ ] Randomly generated dungeon history or world history.
 - [ ] Room theming
 - [ ] More forms of level procedural generation
-- [ ] More equipment and items
+- [x] More equipment and items
 - [ ] Item identification syste,
 - [ ] Level ups as mutations instead of straight stat boosts
 - [ ] Mouse interaction
